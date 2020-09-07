@@ -4,9 +4,15 @@ This project is to create a python script that will randomly assign a list of ch
 
 ## What you'll need
 
-### To send sms messages:
+### Files:
+- chapp.py => main script
+- all_chores.csv => list of chores, sample included
+- user_one.csv and user_two.csv => empty csv for saving weekly chores
+- config.py => more details below
 
-I used twilio to build and send the sms messages. I made a free account [here] (http://www.twilio.com)
+### Twilio => To send sms messages:
+
+I used twilio to build and send the sms messages. I made a free account [here](http://www.twilio.com)
 
 You will have to add all the phone numbers you want to send messages to in Number -> Phone Numbers -> Add New Number. [Add New Numbers](https://www.twilio.com/console/phone-numbers/verified)
 
@@ -14,7 +20,7 @@ For twiliom, you'll also need to install twilio with `pip install twilio`
 
 Also, make sure to grab your account sid and auth token.
 
-### To audomate the script:
+### AWS => To audomate the script:
 **note** I used a aws ec2 to create a cron to schedule the script to run. This is optional if you don't want the script to run on a schedule, or if you have another way to run the script.
 
 I configured a AWS ec2 instance (t2.micro) to run the script. I configured my ec2 instance with Amazon linux 2, and followed this guide to setup python3 in a env and have the env start at login [link to python3 setup](https://www.youtube.com/watch?v=zwZ5hlxsLks)
