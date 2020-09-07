@@ -191,13 +191,13 @@ def main():
     if day == 0:
         wk = build_list(chrs, 'weekly', trace)
         # Add the new lists to the user csvs
-        add_chores_array('zach.csv', wk[0])
-        add_chores_array('caitlin.csv', wk[1])
+        add_chores_array('user_one.csv', wk[0])
+        add_chores_array('user_two.csv', wk[1])
 
     # If not monday, used the weekly chores stored in the csv
     else:
-        wk = get_chores_array('zach.csv')
-        wk_two = get_chores_array('caitlin.csv')
+        wk = get_chores_array('user_one.csv')
+        wk_two = get_chores_array('user_two.csv')
         for i in wk_two:
             wk.append(i)
 
