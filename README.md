@@ -6,7 +6,7 @@ This project is to create a python script that will randomly assign a list of ch
 
 ### To send sms messages:
 
-I used twilio to build and send the sms messages. I made a free account [here] (http://www.twilio.com)
+I used twilio to build and send the sms messages. I made a free account [here](http://www.twilio.com)
 
 You will have to add all the phone numbers you want to send messages to in Number -> Phone Numbers -> Add New Number. [Add New Numbers](https://www.twilio.com/console/phone-numbers/verified)
 
