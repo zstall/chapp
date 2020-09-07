@@ -1,42 +1,53 @@
 #!/home/ec2-user/venv/python3/bin/python
 
+"""
+Author: Zachary Stall
+Date: 9/6/2020
+Description: This script take a dictionary of 'chores' and assigns them randomly
+to users. The users and their information are saved in a seperate config file along with
+other sensitive information. The script then uses these lists of chores to send them to
+the users via sms message through an api request to twilio.
+"""
+
+
 # Download the helper library from https://www.twilio.com/docs/python/install
 from twilio.rest import Client
 import csv
 import datetime
 import random
 import config
+import sys
 
+# Get all chores.
 def all_chores():
-        chrs = {'daily':['Start/fold/put away load of laundry',
-                        'Clean litterbox',
-                        'Sweep kitchen/dining/litterbox area',
-                        'Wash bottles/pump parts',
-                        'Wipe down surfaces',
-                        'Clean kitchen',
-                        'Pick up living room',
-                        'Make bed', 'Poop worms',
-                        'Load/run dishwasher',
-                        'Empty dishwasher',
-                        'Empty garbages/recycling',
-                        'Potty pads',
-                        'Brush Leelas teeth'],
-                'weekly':['Clean bathrooms',
-                        'Vacuum',
-                        'Mop floors',
-                        'Clean out refrigerator'],
-                'bi-weekly':['Dust',
-                            'Wash sheets',
-                            'Organize shelves'],
-                'monthly':['Fully empty/clean litterbox and replace litter]']}
-        return chrs
+
+    chrs = {'daily':['Start/fold/put away load of laundry',
+                    'Clean litterbox',
+                    'Sweep kitchen/dining/litterbox area',
+                    'Wash bottles/pump parts',
+                    'Wipe down surfaces',
+                    'Clean kitchen',
+                    'Pick up living room',
+                    'Make bed', 'Poop worms',
+                    'Load/run dishwasher',
+                    'Empty dishwasher',
+                    'Empty garbages/recycling',
+                    'Potty pads',
+                    'Brush Leelas teeth'],
+            'weekly':['Clean bathrooms',
+                    'Vacuum',
+                    'Mop floors',
+                    'Clean out refrigerator'],
+            'bi-weekly':['Dust',
+                        'Wash sheets',
+                        'Organize shelves'],
+            'monthly':['Fully empty/clean litterbox and replace litter]']}
+
+    return chrs
+
 
 def send_message(chr, nm, phone, wchr, day, trace=False):
 
-    # Your Account Sid and Auth Token from twilio.com/console
-    # DANGER! This is insecure. See http://twil.io/secure
-    #account_sid = 'AC86ec70bb391abb2456dc9083df2e9bb5'
-    #auth_token = 'd170ffae8a37336aa2bf90e641961446'
     client = Client(config.account_sid, config.auth_token)
     msg = '****************************************' + '\n'
     msg += nm + ' here are your Chores: '
@@ -59,7 +70,11 @@ def send_message(chr, nm, phone, wchr, day, trace=False):
     msg += '\n' + '****************************************'
 
     if trace:
+        print()
+        print("*********** MESSAGE DEBUG **************")
         print(msg)
+        print("********* END MESSAGE DEBUG ************")
+        print()
 
     else:
         message = client.messages \
@@ -72,24 +87,40 @@ def send_message(chr, nm, phone, wchr, day, trace=False):
         print(message.status)
 
 def build_list(chrs, interval, trace = False):
-        lst = []
+        # original array of full list of chores
+        lst = chrs[interval]
+        # Seperate lists of random chores to be done
         lst_one = []
         lst_two = []
 
+        # num is a var used to switch between lists
         num = 0
-        for i in chrs[interval]:
+
+        # while loop to randomize selections for lists
+        while len(lst) > 0:
+
             if num == 0:
-                lst_one.append(i)
+                # Randomly remove one item from full list and add it to list one
+                lst_one.append(lst.pop(random.randint(0,len(lst)-1)))
                 num += 1
             else:
-                lst_two.append(i)
+                # Randomly remove one item from full list and add it to list two
+                lst_two.append(lst.pop(random.randint(0,len(lst)-1)))
                 num -= 1
+
         lst.append(lst_one)
         lst.append(lst_two)
 
         if trace:
+            n = 0
+            print()
+            print("******** Build List DEBUG MODE **********")
             for i in lst:
+                print('List Number: ' + str(n))
                 print(i)
+                n += 1
+            print("******* END Build List DEBUG MODE *******")
+            print()
         return lst
 
 def get_chores(chr_file):
@@ -110,11 +141,18 @@ def main():
 
     trace = True
 
+    chrs = all_chores()
+
+    if len(sys.argv) > 1:
+        interval = sys.argv[1]
+        new_chore = sys.argv[2]
+        chrs[interval].append(new_chore)
+        print(chrs[interval])
     phones = config.people
     day = datetime.datetime.today().weekday()
 
-    chrs = all_chores()
-    todo = build_list(chrs, 'daily')
+
+    todo = build_list(chrs, 'daily', trace)
 
     k = random.randint(0, 1)
 
