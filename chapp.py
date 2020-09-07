@@ -18,37 +18,20 @@ import random
 import config
 import sys
 
-# Get all chores.
-def all_chores():
-
-    chrs = {'daily':['Start/fold/put away load of laundry',
-                    'Clean litterbox',
-                    'Sweep kitchen/dining/litterbox area',
-                    'Wash bottles/pump parts',
-                    'Wipe down surfaces',
-                    'Clean kitchen',
-                    'Pick up living room',
-                    'Make bed', 'Poop worms',
-                    'Load/run dishwasher',
-                    'Empty dishwasher',
-                    'Empty garbages/recycling',
-                    'Potty pads',
-                    'Brush Leelas teeth'],
-            'weekly':['Clean bathrooms',
-                    'Vacuum',
-                    'Mop floors',
-                    'Clean out refrigerator'],
-            'bi-weekly':['Dust',
-                        'Wash sheets',
-                        'Organize shelves'],
-            'monthly':['Fully empty/clean litterbox and replace litter]']}
-
-    return chrs
-
+# Send a message using twilio. The follow vars are needed:
+#   chr     - array of Chores
+#   nm      - str name of user
+#   phone   - str phone number of user
+#   wchr    - array of weekly chores
+#   Day     - string var of which day of the week it is, Mon - 0 Sunday - 6
+#   trace   - trace is a var for debugging defaults to False
 
 def send_message(chr, nm, phone, wchr, day, trace=False):
 
+    # client config information for twilio for config file
     client = Client(config.account_sid, config.auth_token)
+
+    # Building the message for the users
     msg = '****************************************' + '\n'
     msg += nm + ' here are your Chores: '
 
@@ -69,6 +52,7 @@ def send_message(chr, nm, phone, wchr, day, trace=False):
 
     msg += '\n' + '****************************************'
 
+    # debugging if trace true will print message to command line
     if trace:
         print()
         print("*********** MESSAGE DEBUG **************")
@@ -76,6 +60,7 @@ def send_message(chr, nm, phone, wchr, day, trace=False):
         print("********* END MESSAGE DEBUG ************")
         print()
 
+    # if trace is false, send message!
     else:
         message = client.messages \
             .create(
@@ -86,6 +71,7 @@ def send_message(chr, nm, phone, wchr, day, trace=False):
 
         print(message.status)
 
+#
 def build_list(chrs, interval, trace = False):
         # original array of full list of chores
         lst = chrs[interval]
@@ -123,13 +109,43 @@ def build_list(chrs, interval, trace = False):
             print()
         return lst
 
-def get_chores(chr_file):
+def get_chores_dic(file):
+
+    rd = csv.reader(open(file))
+    dic = {}
+
+    for row in rd:
+        key = row[0]
+        dic[key] = row[1:]
+
+    return dic
+
+def add_chores_dic(chores, file):
+
+    daily = ['daily']
+    weekly = ['weekly']
+
+    for c in chores['daily']:
+        daily.append(c)
+
+    for c in chores['weekly']:
+        weekly.append(c)
+
+    file = open(file, "w")
+    writer = csv.writer(file)
+
+    writer.writerow(daily)
+    writer.writerow(weekly)
+
+    file.close()
+
+def get_chores_array(chr_file):
     with open(chr_file, newline='') as csvfile:
         chr_array = list(csv.reader(csvfile))
 
     return chr_array
 
-def add_chores(file, chr):
+def add_chores_array(file, chr):
     arr = []
     arr.append(chr)
     with open(file, 'w') as csvfile:
@@ -139,46 +155,55 @@ def add_chores(file, chr):
 
 def main():
 
+    # Trace is a var used for testing. If True messages wont be sent and methods will
+    # print outputs to command line
     trace = True
-
-    chrs = all_chores()
-
-    if len(sys.argv) > 1:
-        interval = sys.argv[1]
+    # Get all chores from csv file and create a dictionary
+    chrs = get_chores_dic('all_chores.csv')
+    # Check for user inputs, -h or -help will print help text, or if user appends
+    # <interval> <new chore> it will be added to csv file
+    if len(sys.argv) == 2:
+        if sys.argv[1]=='-h' or sys.argv[1]=='-help':
+            print("""
+                This script will randomly divide and send chores stored in the all_chores.csv file.
+                To add new chores run ./chapp.py <interval> <new chore> and the script will add the
+                new chore to the csv file.
+            """)
+            exit()
+        else:
+            print('Invalid input')
+            exit()
+    # Checking for new chores
+    elif len(sys.argv) > 2:
+        interval = sys.argv[1].islower()
         new_chore = sys.argv[2]
         chrs[interval].append(new_chore)
-        print(chrs[interval])
+        add_chores_dic(chrs, 'all_chores.csv')
+
+    # Get names and phone numbers from seperate file
     phones = config.people
+    # Get day to determine if new weekly chores are needed
     day = datetime.datetime.today().weekday()
-
-
+    # Buile list of daily chores for users
     todo = build_list(chrs, 'daily', trace)
 
-    k = random.randint(0, 1)
-
-
+    # if Day is Monday (0) then build a new list of weekly chores
     if day == 0:
-        wk = build_list(chrs, 'weekly')
+        wk = build_list(chrs, 'weekly', trace)
+        # Add the new lists to the user csvs
+        add_chores_array('zach.csv', wk[0])
+        add_chores_array('caitlin.csv', wk[1])
 
-        if k == 1:
-            add_chores('zach.csv', wk[0])
-            add_chores('caitlin.csv', wk[1])
-            send_message(todo[0], phones[0][0], phones[0][1], wk[0], day, trace)
-            send_message(todo[1], phones[1][0], phones[1][1], wk[1], day, trace)
-        else:
-            add_chores('zach.csv', wk[1])
-            add_chores('caitlin.csv', wk[0])
-            send_message(todo[1], phones[0][0], phones[0][1], wk[1], day, trace)
-            send_message(todo[0], phones[1][0], phones[1][1], wk[0], day, trace)
+    # If not monday, used the weekly chores stored in the csv
     else:
-        wk = get_chores('zach.csv')
-        wk_two = get_chores('caitlin.csv')
-
+        wk = get_chores_array('zach.csv')
+        wk_two = get_chores_array('caitlin.csv')
         for i in wk_two:
             wk.append(i)
 
-        send_message(todo[0], phones[0][0], phones[0][1], wk[0], day, trace)
-        send_message(todo[1], phones[1][0], phones[1][1], wk[1], day, trace)
+    # Send the messages to the users!
+    send_message(todo[0], phones[0][0], phones[0][1], wk[0], day, trace)
+    send_message(todo[1], phones[1][0], phones[1][1], wk[1], day, trace)
 
 
 if __name__=="__main__":
