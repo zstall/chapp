@@ -1,6 +1,15 @@
 # chapp
 
-This project is to create a python script that will randomly assign a list of chores to users and then send users a sms message to complete there chores.
+This project is to create a python script that will randomly assign a list of chores to users and then send users a sms message to complete there chores. A quick overview of how the scripts works is, a csv is created with a list of daily and weekly chores. The script takes these chores and divides them up randomly and evenly. Each day users are assigned new chores, and the script tracks weekly chores and refreshes these every Monday.
+
+To achieve this I use:
+- Twilio to send sms messages
+- AWS Ec2 to run a small server to run the script on a cron
+- AWS Lambda to start and stop the ec2 on a schedule
+- Three csv files to store chores and track weekly chores for two users
+- two py files, one for the script and a second to store credential/personal information (like names, phone numbers, and twilio api information)
+
+**note** This is currently configured to work for two people, but I will be updating it to work for any number of people.
 
 ## What you'll need
 
