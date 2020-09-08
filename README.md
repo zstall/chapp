@@ -27,7 +27,7 @@ You will have to add all the phone numbers you want to send messages to in Numbe
 
 For twiliom, you'll also need to install twilio with `pip install twilio`
 
-Also, make sure to grab your account sid and auth token.
+Also, make sure to grab your account sid and auth token for the config.py file (more on that below).
 
 ### AWS => To audomate the script:
 **note** I used a aws ec2 to create a cron to schedule the script to run. This is optional if you don't want the script to run on a schedule, or if you have another way to run the script.
